@@ -54,9 +54,6 @@ class LayeredVPC():
         self._cidr_block = IPv4Network(cidr_block)
         self.vpc = ec2.create_vpc(CidrBlock=str(self._cidr_block))
         self.vpc.create_tags(Tags=[{'Key': 'Name', 'Value': self._name}])
-        self.create_subnets()
-        self.create_internet_gateway()
-        self.create_security_groups()
 
     @property
     def name(self):
