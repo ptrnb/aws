@@ -1,0 +1,11 @@
+AssociatePublicIpAddress: true
+BlockDeviceMappings:
+- DeviceName: /dev/xvda
+  Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 8, VolumeType: gp2}
+IamInstanceProfile: s3-admin-access
+ImageId: ami-0c95b86f
+InstanceMonitoring: {Enabled: false}
+InstanceType: t2.micro
+KeyName: MyEC2Key
+LaunchConfigurationName: apache-lcfg2
+SecurityGroups: [sg-1ce16478]

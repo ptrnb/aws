@@ -1,0 +1,39 @@
+# Describe your VPC security groups
+#
+# Each IP Permissions list must contain:
+#  - protocol
+#  - from port
+#  - to port
+#  - source
+#
+#  'source' may be either a CIDR formatted
+#  IP address representing a host, network 
+#  or anywhere eg. 0.0.0.0/0
+#
+#  OR
+#
+#  the name of one of the other security
+#  groups defined in this YAML file.
+#  The actual security group ID will
+#  be substitued at runtime
+web:
+  group_name: web-sg
+  description: Security group for the web layer
+  ip_permissions:
+    - [tcp, 80, 80, 0.0.0.0/0]
+    - [tcp, 22, 22, 0.0.0.0/0]
+  ip_permissions_egress: null
+app:
+  group_name: app-sg
+  description: Security group for the web layer
+  ip_permissions:
+    - [tcp, 22, 22, web]
+    - [tcp, 8080, 8080, web]
+  ip_permissions_egress: null
+rds:
+  group_name: rds-sg
+  description: Security group for the web layer
+  ip_permissions:
+    - [tcp, 22, 22, web]
+    - [tcp, 3306, 3306, app]
+  ip_permissions_egress: null
