@@ -21,7 +21,7 @@ web:
   description: Security group for the web layer
   ip_permissions:
     - [tcp, 80, 80, 0.0.0.0/0]
-    - [tcp, 22, 22, 118.209.82.108/32]
+    - [tcp, 22, 22, 0.0.0.0/0]
   ip_permissions_egress: null
 app:
   group_name: app-sg
