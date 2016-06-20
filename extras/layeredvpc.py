@@ -85,6 +85,19 @@ class LayeredVPC():
         if not subnet_prefix:
             subnet_prefix = SUBNET_PREFIX
 
+        MIN_PREFIX = 17
+        MAX_PREFIX = 28
+
+        # Get generator for subnet sequence
+        # (perhaps should be part of the product method?)
+        try:
+            if not MIN_PREFIX <= subnet_prefix <= MAX_PREFIX:
+                raise ValueError
+            subnet_list = self._cidr_block.subnets(new_prefix=subnet_prefix)
+        except ValueError as e:
+            print('Subnet prefix not valid or not in range for VPC CIDR block')
+            raise e
+
         # define generator expression to retrieve
         # available AZs for the current region
         self._zones = (
@@ -92,16 +105,6 @@ class LayeredVPC():
             for zone in ec2c.describe_availability_zones()['AvailabilityZones']
             if zone['State'] == 'available'
             )
-
-        # Get generator for subnet sequence
-        # (perhaps should be part of the product method?)
-        try:
-            if not 17 <= subnet_prefix <= 28:
-                raise ValueError
-            subnet_list = self._cidr_block.subnets(new_prefix=subnet_prefix)
-        except ValueError as e:
-            print('Subnet prefix not valid')
-            raise e
 
         for network_layer, zone in product(NETWORK_LAYERS, self._zones):
             subnet_cidr = str(next(subnet_list))
