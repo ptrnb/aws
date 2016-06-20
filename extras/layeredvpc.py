@@ -111,7 +111,7 @@ class LayeredVPC():
             subnet = self.vpc.create_subnet(
                 CidrBlock=subnet_cidr,
                 AvailabilityZone=zone)
-            subnet_name = '{0}-{1}-{2}'.format(self.name, network_layer, zone.split('-')[-1])
+            subnet_name = '{0}-{1}-{2}'.format(self.name, network_layer, zone)
             subnet.create_tags(Tags=[{'Key': 'Name', 'Value': subnet_name}])
 
     def create_internet_gateway(self):
