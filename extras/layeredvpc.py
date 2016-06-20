@@ -10,32 +10,29 @@ app layer: private subnet
 
 An exercise in using boto3 to interact with AWS
 """
+import os.path
 from itertools import product
 from collections import namedtuple, OrderedDict
-import yaml
-import os.path
 
-import boto3
 import botocore
+import boto3
+import yaml
 from ipaddress import IPv4Network, AddressValueError
 
-# define the network layers
-# to be used to create layers of
-# subnets and security groups
-
+# define the network layers for the VPC
 NETWORK_LAYERS = ('web', 'app', 'rds')
+
+# Set the prefix length for building the subnets
+SUBNET_PREFIX = 25  # 128(-5 for AWS) = 123 hosts per subnet
 
 # location of template files
 RESOURCES_DIRECTORY = '../resources'
 
+# security group rulesets
+SECURITY_RULES_FILE = 'security_group_rules.yaml'
+
 # namedtuples used for security group firewall rules
-
-CidrIP = namedtuple('CidrIP', 'cidr_ip')
-SgSource = namedtuple('SgSource', 'group_id group_name vpcid')
-IpRule = namedtuple('IpRule', 'proto from_port to_port source')
-
-# Set the prefix length for building the subnets
-SUBNET_PREFIX = 25  # 128(-5 for AWS) = 123 hosts per subnet
+IPRule = namedtuple('IPRule', 'proto from_port to_port source')
 
 # initialise the connections to AWS needed by LayeredVPC
 try:
@@ -146,17 +143,18 @@ class LayeredVPC():
         for each_web_net in self.vpc.subnets.filter(Filters=web_subnet_filter):
             wrt.associate_with_subnet(SubnetId=each_web_net.id)
 
-    def create_security_groups(self):
+    def create_security_groups(self, security_data=None):
         """Build security groups from yaml file"""
 
-        security_data = os.path.join(
+        if not security_data:
+            security_data = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
             RESOURCES_DIRECTORY,
-            'security_group_rules.yaml')
+            SECURITY_RULES_FILE)
 
         security_groups = OrderedDict()
-        with open(security_data, 'r') as stream:
-            security_groups = yaml.safe_load(stream)
+        with open(security_data, 'r') as yaml_data:
+            security_groups = yaml.safe_load(yaml_data)
 
         # First create the security groups
         self._security_group_ids = dict()
@@ -196,7 +194,7 @@ class LayeredVPC():
         rule_list = list()
         authorize_rules = dict()
         for rule in rules:
-            ip_rule = IpRule(*rule)
+            ip_rule = IPRule(*rule)
             ip_permissions_base = {
                 'IpProtocol': ip_rule.proto,
                 'FromPort': int(ip_rule.from_port),
