@@ -146,6 +146,7 @@ class LayeredVPC():
     def create_security_groups(self, security_data=None):
         """Build security groups from yaml file"""
 
+        # set default security rules if user does not specify source file
         if not security_data:
             security_data = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -158,7 +159,7 @@ class LayeredVPC():
 
         # First create the security groups
         self._security_group_ids = dict()
-        for secgrp in security_groups.keys():
+        for secgrp in security_groups:
             grp_name = security_groups[secgrp]['group_name']
             description = security_groups[secgrp]['description']
             try:
@@ -175,22 +176,30 @@ class LayeredVPC():
                 raise e
 
         # Next add the ingress and egress rules
-        for secgrp in security_groups.keys():
-            group = self._security_group_ids[secgrp]
-            ingress_rules = security_groups[secgrp]['ip_permissions']
-            if ingress_rules:
-                ingress_permissions = self._build_security_group_rule(ingress_rules)
-                group.authorize_ingress(**ingress_permissions)
-            egress_rules = security_groups[secgrp]['ip_permissions_egress']
-            if egress_rules:
-                egress_permissions = self._build_security_group_rule(egress_rules)
-                group.authorize_egress(**egress_permissions)
+        rulesets = ('ip_permissions', 'ip_permissions_egress')
+        for secgrp in security_groups:
+            for ruleset in rulesets:
+                try:
+                    group = self._security_group_ids[secgrp]
+                    rules = security_groups[secgrp][ruleset]
+                    if rules and ruleset == 'ip_permissions':
+                        ingress_permissions = self._build_security_group_rule(rules)
+                        group.authorize_ingress(**ingress_permissions)
+                    elif rules and ruleset == 'ip_permissions_egress':
+                        egress_permissions = self._build_security_group_rule(rules)
+                        group.authorize_egress(**egress_permissions)
+                except KeyError:
+                    continue
+                except botocore.client.ClientError as e:
+                    print('Unable to add ip permissions to security group')
+                    raise e
+
 
     def _build_security_group_rule(self, rules):
         """Utility to build a rule definition from a list
 
         Returns a dict with the IpPermissions attribute
-        set to the supplied rule"""
+        set to the list of rules supplied"""
         rule_list = list()
         authorize_rules = dict()
         for rule in rules:
