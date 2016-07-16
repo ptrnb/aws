@@ -21,6 +21,22 @@ jmp:
   description: Security group for the jump hosts used for SSH access
   ip_permissions:
     - [tcp, 22, 22, 0.0.0.0/0] # Change 0.0.0.0/0 to your source cidr_ip
+    - [tcp, 22, 22, 54.183.255.128/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.228.16.0/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.232.40.64/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.241.32.64/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.243.31.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.244.52.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.245.168.0/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.248.220.0/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.250.253.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.251.31.128/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.252.79.128/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.252.254.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 54.255.254.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 107.23.255.0/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 176.34.159.192/26] # Route 53 health checker ip
+    - [tcp, 22, 22, 177.71.207.128/26] # Route 53 health checker ip
   ip_permissions_egress:
     - [tcp, 22, 22, web]
     - [tcp, 22, 22, app]
