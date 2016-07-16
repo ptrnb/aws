@@ -16,24 +16,33 @@
 #  groups defined in this YAML file.
 #  The actual security group ID will
 #  be substitued at runtime
+jmp:
+  group_name: jmp-sg
+  description: Security group for the jump hosts used for SSH access
+  ip_permissions:
+    - [tcp, 22, 22, 0.0.0.0/0] # Change 0.0.0.0/0 to your source cidr_ip
+  ip_permissions_egress:
+    - [tcp, 22, 22, web]
+    - [tcp, 22, 22, app]
+    - [tcp, 22, 22, rds]
 web:
   group_name: web-sg
   description: Security group for the web layer
   ip_permissions:
     - [tcp, 80, 80, 0.0.0.0/0]
-    - [tcp, 22, 22, 0.0.0.0/0]
+    - [tcp, 22, 22, jmp]
   ip_permissions_egress: null
 app:
   group_name: app-sg
   description: Security group for the web layer
   ip_permissions:
-    - [tcp, 22, 22, web]
+    - [tcp, 22, 22, jmp]
     - [tcp, 8080, 8080, web]
   ip_permissions_egress: null
 rds:
   group_name: rds-sg
   description: Security group for the web layer
   ip_permissions:
-    - [tcp, 22, 22, web]
+    - [tcp, 22, 22, jmp]
     - [tcp, 3306, 3306, app]
   ip_permissions_egress: null
