@@ -1,0 +1,117 @@
+{
+    "Description": "Configures an EC2 instance",
+    "Mappings": {
+        "RegionMap": {
+            "ap-southeast-2": {
+                "AMI": "ami-dc361ebf"
+            }
+        }
+    },
+    "Outputs": {
+        "AZ": {
+            "Description": "Availability Zone of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "AvailabilityZone"
+                ]
+            }
+        },
+        "InstanceId": {
+            "Description": "InstanceId of the newly created EC2 instance",
+            "Value": {
+                "Ref": "Ec2Instance"
+            }
+        },
+        "PrivateDNS": {
+            "Description": "Private DNSName of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PrivateDnsName"
+                ]
+            }
+        },
+        "PrivateIP": {
+            "Description": "Private IP address of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PrivateIp"
+                ]
+            }
+        },
+        "PublicDNS": {
+            "Description": "Public DNSName of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PublicDnsName"
+                ]
+            }
+        },
+        "PublicIP": {
+            "Description": "Public IP address of the newly created EC2 instance",
+            "Value": {
+                "Fn::GetAtt": [
+                    "Ec2Instance",
+                    "PublicIp"
+                ]
+            }
+        }
+    },
+    "Parameters": {
+        "KeyName": {
+            "Description": "Name of an existing ec2 keypair to enable SSH access to instance",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "Ec2Instance": {
+            "Properties": {
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "RegionMap",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "AMI"
+                    ]
+                },
+                "InstanceType": "t2.micro",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroups": [
+                    "Web-DMZ"
+                ],
+                "Tags": [
+                    {
+                        "Key": "Env",
+                        "Value": "dev"
+                    },
+                    {
+                        "Key": "Name",
+                        "Value": "my-cf-ec2-instance"
+                    },
+                    {
+                        "Key": "Owner",
+                        "Value": "Peter Brown"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash\n",
+                                "yum update -y"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Type": "AWS::EC2::Instance"
+        }
+    }
+}
