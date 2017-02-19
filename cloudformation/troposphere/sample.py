@@ -22,21 +22,22 @@ keyname_param = template.add_parameter(Parameter(
 template.add_mapping('RegionMap', {
     "ap-southeast-2": {"AMI": "ami-dc361ebf"}, })
 
-ec2_instance = template.add_resource(ec2.Instance(
-    "Ec2Instance",
-    ImageId=FindInMap("RegionMap", Ref("AWS::Region"), "AMI"),
-    InstanceType="t2.micro",
-    KeyName=Ref(keyname_param),
-    SecurityGroups=["Web-DMZ"],
-    UserData=Base64(Join('', [
-        '#!/bin/bash\n',
-        'yum update -y'])),
-    Tags=Tags(
-        Name='my-cf-ec2-instance',
-        Owner='Peter Brown',
-        Env='dev'
-        )
-    ))
+for number in range(1, 3):
+    ec2_instance = template.add_resource(ec2.Instance(
+        "Ec2Instance{0:02d}".format(number),
+        ImageId=FindInMap("RegionMap", Ref("AWS::Region"), "AMI"),
+        InstanceType="t2.micro",
+        KeyName=Ref(keyname_param),
+        SecurityGroups=["Web-DMZ"],
+        UserData=Base64(Join('', [
+            '#!/bin/bash\n',
+            'yum update -y'])),
+        Tags=Tags(
+            Name='my-cf-ec2-instance-{0:02d}'.format(number),
+            Owner='Peter Brown',
+            Env='dev'
+            )
+        ))
 
 template.add_output([
     Output(
