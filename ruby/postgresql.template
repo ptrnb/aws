@@ -1,0 +1,207 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "PostgreSQL",
+  "Parameters": {
+    "DevOpsVPC": {
+      "Type": "String",
+      "Description": "ID of the VPC to use"
+    },
+    "DevOpsSubnetA": {
+      "Type": "String",
+      "Description": "ID of a subnet to use"
+    },
+    "DevOpsSubnetB": {
+      "Type": "String",
+      "Description": "ID of a subnet to use"
+    },
+    "DevOpsSubnetC": {
+      "Type": "String",
+      "Description": "ID of a subnet to use"
+    },
+    "DBName": {
+      "Type": "String"
+    },
+    "MasterUsername": {
+      "Type": "String"
+    },
+    "MasterUserPassword": {
+      "Type": "String",
+      "NoEcho": "true"
+    },
+    "EngineVersion": {
+      "Type": "String"
+    },
+    "MultiAZ": {
+      "Type": "String",
+      "Default": "false"
+    },
+    "DBInstanceClass": {
+      "Type": "String",
+      "Default": "db.t2.medium"
+    }
+  },
+  "Resources": {
+    "sb-pgsql-sg": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow everything",
+        "VpcId": {
+          "Ref": "DevOpsVPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "-1",
+            "FromPort": "5432",
+            "ToPort": "5432"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "IpProtocol": "-1",
+            "FromPort": "0",
+            "ToPort": "65535"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  " resource"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "DBSNGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Database Subnet Group",
+        "SubnetIds": [
+          {
+            "Ref": "DevOpsSubnetA"
+          },
+          {
+            "Ref": "DevOpsSubnetB"
+          },
+          {
+            "Ref": "DevOpsSubnetC"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  " resource"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "sb-pgsql-db": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "AllocatedStorage": "30",
+        "AllowMajorVersionUpgrade": "false",
+        "AutoMinorVersionUpgrade": "false",
+        "BackupRetentionPeriod": "7",
+        "PreferredBackupWindow": "11:15-12:15",
+        "CopyTagsToSnapshot": "true",
+        "DBInstanceClass": {
+          "Ref": "DBInstanceClass"
+        },
+        "DBSubnetGroupName": {
+          "Ref": "DBSNGroup"
+        },
+        "DBName": {
+          "Ref": "DBName"
+        },
+        "Engine": "postgres",
+        "EngineVersion": {
+          "Ref": "EngineVersion"
+        },
+        "MasterUsername": {
+          "Ref": "MasterUsername"
+        },
+        "MasterUserPassword": {
+          "Ref": "MasterUserPassword"
+        },
+        "MultiAZ": {
+          "Ref": "MultiAZ"
+        },
+        "PubliclyAccessible": "false",
+        "VPCSecurityGroups": [
+          {
+            "Ref": "sb-pgsql-sg"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  {
+                    "Ref": "AWS::StackName"
+                  },
+                  " resource"
+                ]
+              ]
+            }
+          },
+          {
+            "Key": "Project",
+            "Value": "Solar"
+          },
+          {
+            "Key": "CostCentre",
+            "Value": "Solar"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "DBEndpoint": {
+      "Value": {
+        "Fn::GetAtt": [
+          "sb-pgsql-db",
+          "Endpoint.Address"
+        ]
+      }
+    },
+    "DBName": {
+      "Value": {
+        "Ref": "DBName"
+      }
+    },
+    "MasterUsername": {
+      "Value": {
+        "Ref": "MasterUsername"
+      }
+    },
+    "MasterUserPassword": {
+      "Value": {
+        "Ref": "MasterUserPassword"
+      }
+    }
+  }
+}
